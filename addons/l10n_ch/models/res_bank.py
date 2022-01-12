@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import re
+from stdnum import iso11649
 
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
@@ -191,6 +192,10 @@ class ResPartnerBank(models.Model):
             # _check_for_qr_code_errors ensures we can't have a QR-IBAN without a QR-reference here
             reference_type = 'QRR'
             reference = structured_communication
+        # The structured communication can also be a creditor reference (ISO 11649) with non QR-IBAN
+        elif iso11649.is_valid(structured_communication):
+            reference_type = 'SCOR'
+            reference = iso11649.compact(structured_communication)
 
         currency = currency or self.currency_id or self.company_id.currency_id
 
